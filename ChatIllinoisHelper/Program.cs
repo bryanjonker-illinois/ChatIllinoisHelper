@@ -9,7 +9,6 @@ var builder = FunctionsApplication.CreateBuilder(args);
 
 builder.ConfigureFunctionsWebApplication();
 
-// Add user secrets in development
 if (builder.Environment.IsDevelopment()) {
     builder.Configuration.AddUserSecrets<Program>();
 }
