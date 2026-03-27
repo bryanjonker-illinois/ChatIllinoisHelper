@@ -7,21 +7,22 @@ namespace ChatIllinoisHelper.Models {
         private readonly string _apiKey = apiKey ?? "";
         private readonly string _chatbotName = chatbotName ?? "";
 
+        public string Model { get; set; } = "";
         public string SystemPrompt { get; set; } = "";
 
         public async Task<string> SendMessage(string message) {
             try {
                 using var client = new HttpClient();
-                var messages = new List<ChatbotTransportMessage> {
-                    new ChatbotTransportMessage { content = message, role = "user" },
-                };
+                var messages = new List<ChatbotTransportMessage>();
                 if (!string.IsNullOrEmpty(SystemPrompt)) {
                     messages.Add(new ChatbotTransportMessage { content = SystemPrompt, role = "system" });
                 }
+                messages.Add(new ChatbotTransportMessage { content = message, role = "user" });
                 var json = System.Text.Json.JsonSerializer.Serialize(new ChatbotTransport {
                     api_key = _apiKey,
                     course_name = _chatbotName,
-                    messages = messages
+                    messages = messages,
+                    model = Model
                 });
                 var content = new StringContent(
                     json,

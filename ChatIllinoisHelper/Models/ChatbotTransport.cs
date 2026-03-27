@@ -1,7 +1,7 @@
 ﻿namespace ChatIllinoisHelper.Models {
     public class ChatbotTransport {
 #pragma warning disable IDE1006 // Naming Styles
-        public string model { get; set; } = "Qwen/Qwen2.5-VL-72B-Instruct";
+        public string model { get; set; } = "";
         public IEnumerable<ChatbotTransportMessage> messages { get; set; } = [];
 
         public string api_key { get; set; } = "";
