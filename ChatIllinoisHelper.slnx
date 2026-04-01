@@ -1,3 +1,4 @@
 <Solution>
-  <Project Path="ChatIllinoisHelper/ChatIllinoisHelper.csproj" />
+  <Project Path="ChatIllinoisHelper.Data/ChatIllinoisHelper.Data.csproj" Id="50f0d0ea-86a6-420c-96d5-7404e1958bc5" />
+  <Project Path="ChatIllinoisHelperBackend/ChatIllinoisHelperBackend.csproj" Id="09645c19-a4d1-4f5a-bf5d-36dbfbaffe26" />
 </Solution>

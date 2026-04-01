@@ -1,0 +1,219 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<ilw-content width="page">
+    <h1>Chat Helper</h1>
+
+    <p>This is used to support the <a href="https://chat.illinois.edu">Illinois Chat</a> site to generate a chatbot that can live on your website. This is a platform-agnostic solution that does not require a specific CMS.</p>
+
+    <h2>Instructions</h2>
+    <p>To start:</p>
+    <ol>
+        <li>Go to <a href="https://chat.illinois.edu">Illinois Chat</a> and create a chatbot.</li>
+        <li>Go to the dashboard and load the materials you want the chatbot trained on. </li>
+        <li>In the Prompting section, create a prompt for your chatbot.</li>
+        <li>In the API section, create an API key for your chatbot.</li>
+        <li>On this site, create a new chatbot entry using a custom code, and the name, prompt, and API key you generated from the Illinois Chat site.</li>
+        <li>Choose a model and save your changes.</li>
+        <li>Copy the JavaScript, CSS, and HTML snippets provided to your website.</li>
+    </ol>
+
+    @if (ChatItems != null && ChatItems.Count > 0)
+    {
+        <p>It looks like you have already created some chatbot entries. You can edit those by selecting them from the dropdown below.</p>
+        <div class="ils-input-entry">
+            <label for="entry">Saved Chatbots</label>
+            <select id="entry" @onchange="e => OnChatItemChanged(int.Parse(e.Value.ToString()))" style="width: 500px;">
+                <option value="0">-- choose one --</option>
+                @foreach (var item in ChatItems) {
+                    <option value="@item.Key">@item.Value</option>
+                }
+            </select>
+        </div>
+    }
+    @if (CurrentChatItem != null) {
+        <h2>Chatbot Helper</h2>
+
+        <div class="ils-input-entry">
+            <label for="code">Chatbot Code</label>
+            <input id="code" type="text" @bind="CurrentChatItem.Code" class="ils-input-long" />
+            <p>This should be lower-case, with no spaces, and is used in your JavaScript to call the helper service.</p>
+        </div>
+
+        <div class="ils-input-entry">
+            <label for="name">Chatbot Name</label>
+            <input id="name" type="text" @bind="CurrentChatItem.Name" class="ils-input-long" />
+            <p>Pull this from the Illinois Chat application.</p>
+        </div>
+
+        <div class="ils-input-entry">
+            <label for="api">API Key</label>
+            <input id="api" type="password" @bind="CurrentChatItem.ApiSecret" class="ils-input-long" />
+            <p>Pull this from the Illinois Chat application under the "API" screen.</p>
+        </div>
+
+        <div class="ils-input-entry">
+            <label for="systemprompt">System Prompt (from chat.illinois.edu)</label>
+            <textarea id="systemprompt" @bind="CurrentChatItem.SystemPrompt" />
+            <p>Pull this from the Illinois Chat application under the "Prompting" screen.</p>
+        </div>
+
+        <div class="ils-input-entry">
+            <label for="model">Model</label>
+            <select id="model" @bind="CurrentChatItem.Model">
+                <option value="">Choose one</option>
+                @foreach (var item in Models) {
+                    <option value="@item">@item</option>
+                }
+            </select>
+            <p>Choose the model you would like to use. We recommend starting with "gpt-oss:120b".</p>
+        </div>
+
+        <div class="ils-input-entry">
+            <div class="ils-input-entry-compact">
+                <label for="think">Remove justification text in final chat response?</label>
+                <div class="ils-toggle-slider">
+                    <input id="think" type="checkbox" @bind="CurrentChatItem.RemoveThinkText" role="switch" />
+                    <span>
+                        <span class="ils-container"></span>
+                        <span aria-hidden="true" class="ils-text-on">Yes</span>
+                        <span aria-hidden="true" class="ils-text-off">No</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <button class="ilw-button" @onclick="Save">Save Information</button>
+
+        <p>@Results</p>
+    }
+</ilw-content>
+
+    @if (CurrentChatItem != null && CurrentChatItem.Code != "") {
+    <ilw-content width="page">
+        <h2>Code to use</h2>
+        <p>@CurrentChatItem.Name / @CurrentChatItem.Code</p>
+        <p><button id="code-button" onclick="copyToClipboard()" class="ilw-button ilw-theme-orange">Copy to Clipboard</button></p>
+    </ilw-content>
+
+    <pre>
+    <code id="code-text">
+&lt;ilw-content id="chatbot-card" width="page"&gt;
+    &lt;h3&gt;Chatbot introduction &lt;/h3&gt;
+    &lt;label id="chatbot-label" for="chatbot"&gt;@CurrentChatItem.Name &lt;/label&gt;
+    &lt;input id="chatbot" type="text"&gt;
+    &lt;button class="ilw-button" id="chatbot-send"&gt;Ask &lt;/button&gt;
+&lt;/ilw-content&gt;
+
+&lt;ilw-content id="chatbot-results" padding="20px" theme="blue" width="page"&gt;
+&lt;/ilw-content&gt;
+
+&lt;script&gt;
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('chatbot').addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              loadChat();
+            }
+        });
+        document.getElementById('chatbot-send').addEventListener("click", function () {
+            loadChat();
+        });
+    });
+
+    async function loadChat() {
+        let question = document.getElementById('chatbot').value;
+        let source = '@CurrentChatItem.Code';
+        let url = 'https://chatillinoishelperbackend20260331172208-g8c0bhfyg0bna6gu.northcentralus-01.azurewebsites.net/';
+        let chatimg = 'https://chatillinoishelperbackend20260331172208-g8c0bhfyg0bna6gu.northcentralus-01.azurewebsites.net/img/chat.png';
+        let userimg = 'https://chatillinoishelperbackend20260331172208-g8c0bhfyg0bna6gu.northcentralus-01.azurewebsites.net/img/user.png';
+        let results = document.getElementById('chatbot-results');
+        results.style.display = 'block';
+        results.scrollIntoView();
+        results.innerHTML = `&lt;p class="question"&gt; &lt;img src="${userimg}" `;
+        results.innerHTML += `alt=""&gt;Asking @CurrentChatItem.Name:  &lt;span&gt;${question} &lt;/span> &lt;/p&gt;`;
+        const response = await fetch(`${url}api/chat?q=${question}&source=${source}`, {
+            method: 'GET',
+            headers: {
+                "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+            }}
+        );
+        var responseText = await response.text();
+        results.innerHTML += `&lt;p class="answer"&gt;&lt;img src="${chatimg}" alt=""&gt;@CurrentChatItem.Name's response:&lt;/p&gt;`;
+        results.innerHTML += responseText;
+        results.innerHTML += '&lt;p&gt;&lt;button id="chatbot-return" class="ilw-button ilw-theme-blue-outline" ';
+        results.innerHTML += 'onclick="back()"&gt;Ask Another Question&lt;/button&gt;&lt;/p&gt;';
+        document.getElementById('chatbot-return').focus();
+    }
+
+    function back() {
+        document.getElementById('chatbot-card').scrollIntoView();
+        document.getElementById('chatbot').value = '';
+        document.getElementById('chatbot').focus();
+    }
+&lt;/script&gt;
+
+&lt;style&gt;
+    #chatbot-label {
+        display: block;
+        color: var(--il-blue);
+        font: normal 500 1.25rem / 1.5rem var(--il-font-sans);
+        margin: 0;
+        text-align: left;
+        padding: 0 0 5px;
+    }
+
+    #chatbot {
+        width: calc(100% - 125px);
+        margin: 0;
+        border-radius: 5px;
+        padding: 10px;
+        font: 1rem / 1.125rem var(--il-font-sans);
+        background-color: #fff;
+        border: thin var(--il-blue) solid;
+    }
+
+    #chatbot:hover {
+        background-color: var(--il-storm-lighter-4);
+    }
+
+    #chatbot:focus {
+        background-color: var(--il-storm-lighter-4);
+        outline: var(--il-altgeld) solid 3px;
+    }
+
+    #chatbot-results {
+        display: none;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    #chatbot-results .question, #chatbot-results .answer {
+        clear: both;
+    }
+
+    #chatbot-results .question img, #chatbot-results .answer img {
+        height: 30px;
+        margin-right: 10px;
+        float: left;
+        background: white;
+        border-radius: 20px;
+    }
+
+    #chatbot-results .question span, #chatbot-results .answer {
+        font-weight: bold;
+    }
+&lt;/style&gt;
+    </code>
+    </pre>
+
+    <ilw-content width="page">
+        <h2>Delete</h2>
+        <p><button id="code-button" @onclick="Delete" class="ilw-button ilw-theme-orange-solid">Delete </button></p>
+    </ilw-content>
+    }
+
+

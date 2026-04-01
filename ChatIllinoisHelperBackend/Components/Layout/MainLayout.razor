@@ -1,0 +1,46 @@
+﻿@inherits LayoutComponentBase
+<ilw-page>
+    <ilw-header slot="header">
+        <a slot="primary-unit" href="https://itpartners.illinois.edu/">IT Partners</a>
+        <a slot="site-name" href="/">IT Partners Chatbot Helper</a>
+        <div slot="search">
+            <CascadingAuthenticationState>
+                <AuthorizeView>
+                    <Authorized>
+                        <ul class="ilw-buttons">
+                            <li><a class="ilw-button" href="/">Home</a></li>
+                            <li><a class="ilw-button" href="MicrosoftIdentity/Account/SignOut">Sign Out</a></li>
+                        </ul>
+                    </Authorized>
+                    <NotAuthorized>
+                        <ul class="ilw-buttons">
+                            <li><a class="ilw-button" href="/">Home</a></li>
+                            <li><a class="ilw-button" href="MicrosoftIdentity/Account/SignIn">Log in</a></li>
+                        </ul>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </CascadingAuthenticationState>
+        </div>
+    </ilw-header>
+
+    <main id="app-main">
+        @Body
+        <ilw-spacer></ilw-spacer>
+    </main>
+
+    <aside>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    </aside>
+
+    <ilw-footer slot="footer">
+        <a slot="primary-unit" href="https://itpartners.illinois.edu/">IT Partners</a>
+        <a slot="site-name" href="/">Chatbot Helper</a>
+        <div slot="actions">
+            <a href="https://go.illinois.edu/itpartners-chatbot-help">Report a Problem</a>
+        </div>
+    </ilw-footer>
+</ilw-page>
